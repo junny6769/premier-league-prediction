@@ -96,3 +96,28 @@ SELECT
 FROM team_matches
 
 GROUP BY season, team;
+
+CREATE OR REPLACE VIEW team_venue_summary AS
+
+SELECT
+    season,
+    team,
+    venue,
+
+    COUNT(*) AS matches_played,
+
+    ROUND(AVG(goals_for), 3)
+        AS goals_for_per_game,
+
+    ROUND(AVG(goals_against), 3)
+        AS goals_against_per_game,
+
+    ROUND(AVG(shots_for), 3)
+        AS shots_per_game,
+
+    ROUND(AVG(shots_on_target_for), 3)
+        AS shots_on_target_per_game
+
+FROM team_matches
+
+GROUP BY season, team, venue;
