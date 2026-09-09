@@ -43,3 +43,56 @@ SELECT
     END AS points
 
 FROM matches;
+
+CREATE OR REPLACE VIEW team_season_summary AS
+
+SELECT
+    season,
+    team,
+
+    COUNT(*) AS matches_played,
+
+    SUM(
+        CASE
+            WHEN points = 3 THEN 1
+            ELSE 0
+        END
+    ) AS wins,
+
+    SUM(
+        CASE
+            WHEN points = 1 THEN 1
+            ELSE 0
+        END
+    ) AS draws,
+
+    SUM(
+        CASE
+            WHEN points = 0 THEN 1
+            ELSE 0
+        END
+    ) AS losses,
+
+    SUM(goals_for) AS goals_for,
+    SUM(goals_against) AS goals_against,
+
+    SUM(goals_for) - SUM(goals_against)
+        AS goal_difference,
+
+    SUM(points) AS points,
+
+    ROUND(AVG(goals_for), 2)
+        AS goals_per_game,
+
+    ROUND(AVG(goals_against), 2)
+        AS goals_conceded_per_game,
+
+    ROUND(AVG(shots_for), 2)
+        AS shots_per_game,
+
+    ROUND(AVG(shots_on_target_for), 2)
+        AS shots_on_target_per_game
+
+FROM team_matches
+
+GROUP BY season, team;
