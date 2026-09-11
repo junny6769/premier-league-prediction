@@ -188,3 +188,52 @@ print(
         current_strengths["team"] == "Tottenham"
     ]
 )
+
+current_strengths.to_csv(
+    "data/processed/current_team_strengths.csv",
+    index=False
+)
+
+season_weights = {
+    "2021-22": 1,
+    "2022-23": 2,
+    "2023-24": 3,
+    "2024-25": 4,
+    "2025-26": 5
+}
+
+league_averages["weight"] = (
+    league_averages["season"].map(season_weights)
+)
+
+weighted_league_home_goals = (
+    (
+        league_averages["league_home_goals"]
+        * league_averages["weight"]
+    ).sum()
+    / league_averages["weight"].sum()
+)
+
+weighted_league_away_goals = (
+    (
+        league_averages["league_away_goals"]
+        * league_averages["weight"]
+    ).sum()
+    / league_averages["weight"].sum()
+)
+
+print("Weighted league home goals:",
+      weighted_league_home_goals)
+
+print("Weighted league away goals:",
+      weighted_league_away_goals)
+
+weighted_league_average = pd.DataFrame({
+    "league_home_goals": [weighted_league_home_goals],
+    "league_away_goals": [weighted_league_away_goals]
+})
+
+weighted_league_average.to_csv(
+    "data/processed/weighted_league_average.csv",
+    index=False
+)
