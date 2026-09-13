@@ -8,16 +8,16 @@ training_seasons = [
     "2021-22",
     "2022-23",
     "2023-24",
-    "2024-25"
+    "2024-25",
 ]
 
-test_season = "2025-26"
+test_season = "2026-27"
 
 season_weights = {
     "2021-22": 1,
     "2022-23": 2,
     "2023-24": 3,
-    "2024-25": 4
+    "2024-25": 4,
 }
 
 # Connect to PostgreSQL
@@ -205,20 +205,33 @@ results = []
 
 max_goals = 10
 
+def get_team_strength(team, strength_lookup):
+
+    if team in strength_lookup.index:
+        return strength_lookup.loc[team]
+
+    # Fallback for team with no EPL history
+    return pd.Series({
+        "home_attack_strength": 1.0,
+        "home_defence_strength": 1.0,
+        "away_attack_strength": 1.0,
+        "away_defence_strength": 1.0
+    })
+
 for _, match in test_matches.iterrows():
 
     home_team = match["home_team"]
     away_team = match["away_team"]
 
-    # Skip teams that do not exist in training data
-    if (
-        home_team not in strength_lookup.index
-        or away_team not in strength_lookup.index
-    ):
-        continue
+    home = get_team_strength(
+        home_team,
+        strength_lookup
+    )
 
-    home = strength_lookup.loc[home_team]
-    away = strength_lookup.loc[away_team]
+    away = get_team_strength(
+        away_team,
+        strength_lookup
+    )
 
     # Expected goals
     expected_home_goals = (
