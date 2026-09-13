@@ -3,4 +3,4 @@ An end-to-end data analytics project using Python and SQL to predict final Premi
 
 Newly promoted teams without recent Premier League history are initialized at league-average attack and defence strength.
 
-I compared multiple temporal weighting strategies through historical backtesting and selected the best-performing configuration.
+I compared multiple temporal weighting strategies through historical backtesting and selected the best-performing configuration, which is linear weighting. 
