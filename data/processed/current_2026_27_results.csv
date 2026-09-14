@@ -1,0 +1,40 @@
+date,time,home_team,away_team,home_goals,away_goals,full_time_result,season
+2026-08-21,20:00,Arsenal,Coventry,3,0,H,2026-27
+2026-08-22,12:30,Hull,Man United,2,0,H,2026-27
+2026-08-22,15:00,Everton,Crystal Palace,2,0,H,2026-27
+2026-08-22,15:00,Ipswich,Sunderland,2,1,H,2026-27
+2026-08-22,15:00,Nott'm Forest,Leeds,0,1,A,2026-27
+2026-08-22,17:30,Brentford,Tottenham,3,0,H,2026-27
+2026-08-23,14:00,Brighton,Aston Villa,4,0,H,2026-27
+2026-08-23,14:00,Man City,Bournemouth,2,1,H,2026-27
+2026-08-23,16:30,Newcastle,Liverpool,2,2,D,2026-27
+2026-08-24,20:00,Fulham,Chelsea,2,3,A,2026-27
+2026-08-28,20:00,Crystal Palace,Man City,1,4,A,2026-27
+2026-08-29,12:30,Liverpool,Nott'm Forest,2,2,D,2026-27
+2026-08-29,15:00,Bournemouth,Everton,1,1,D,2026-27
+2026-08-29,15:00,Coventry,Hull,0,1,A,2026-27
+2026-08-29,17:30,Tottenham,Newcastle,0,2,A,2026-27
+2026-08-30,14:00,Chelsea,Brighton,4,3,H,2026-27
+2026-08-30,14:00,Leeds,Brentford,1,1,D,2026-27
+2026-08-30,14:00,Sunderland,Fulham,1,0,H,2026-27
+2026-08-30,16:30,Man United,Ipswich,5,2,H,2026-27
+2026-08-31,20:00,Aston Villa,Arsenal,0,1,A,2026-27
+2026-09-04,20:00,Ipswich,Liverpool,0,2,A,2026-27
+2026-09-05,12:30,Newcastle,Bournemouth,2,2,D,2026-27
+2026-09-05,15:00,Brentford,Sunderland,1,1,D,2026-27
+2026-09-05,15:00,Brighton,Leeds,1,1,D,2026-27
+2026-09-05,15:00,Fulham,Crystal Palace,2,3,A,2026-27
+2026-09-05,15:00,Man City,Coventry,1,0,H,2026-27
+2026-09-05,15:00,Nott'm Forest,Tottenham,0,0,D,2026-27
+2026-09-05,17:30,Hull,Aston Villa,0,0,D,2026-27
+2026-09-06,14:00,Everton,Man United,2,2,D,2026-27
+2026-09-06,16:30,Arsenal,Chelsea,2,1,H,2026-27
+2026-09-12,15:00,Aston Villa,Nott'm Forest,1,2,A,2026-27
+2026-09-12,15:00,Bournemouth,Brentford,2,2,D,2026-27
+2026-09-12,15:00,Chelsea,Hull,2,2,D,2026-27
+2026-09-12,15:00,Crystal Palace,Ipswich,2,3,A,2026-27
+2026-09-12,15:00,Liverpool,Fulham,0,0,D,2026-27
+2026-09-12,17:30,Tottenham,Everton,0,0,D,2026-27
+2026-09-12,20:00,Sunderland,Arsenal,0,2,A,2026-27
+2026-09-13,14:00,Coventry,Brighton,0,5,A,2026-27
+2026-09-13,16:30,Man United,Man City,0,1,A,2026-27
