@@ -3,7 +3,7 @@ from scipy.stats import poisson
 
 
 # Load team strengths
-strengths = pd.read_csv(
+current_strengths = pd.read_csv(
     "data/processed/current_team_strengths.csv"
 )
 
@@ -15,15 +15,56 @@ league_average = pd.read_csv(
 league_home_goals = league_average["league_home_goals"].iloc[0]
 league_away_goals = league_average["league_away_goals"].iloc[0]
 
+def get_team_strength(team):
+
+    team_row = current_strengths[
+        current_strengths["team"] == team
+    ]
+
+    if not team_row.empty:
+        return team_row.iloc[0]
+
+    # Team with no historical EPL data
+    return pd.Series({
+        "home_attack_strength": 1.0,
+        "home_defence_strength": 1.0,
+        "away_attack_strength": 1.0,
+        "away_defence_strength": 1.0
+    })
+
+def calculate_expected_goals(
+    home_team,
+    away_team
+):
+
+    home = get_team_strength(home_team)
+    away = get_team_strength(away_team)
+
+    expected_home_goals = (
+        league_home_goals
+        * home["home_attack_strength"]
+        * away["away_defence_strength"]
+    )
+
+    expected_away_goals = (
+        league_away_goals
+        * away["away_attack_strength"]
+        * home["home_defence_strength"]
+    )
+
+    return (
+        expected_home_goals,
+        expected_away_goals
+    )
 
 def predict_match(home_team, away_team):
 
-    home = strengths[
-        strengths["team"] == home_team
+    home = current_strengths[
+        current_strengths["team"] == home_team
     ].iloc[0]
 
-    away = strengths[
-        strengths["team"] == away_team
+    away = current_strengths[
+        current_strengths["team"] == away_team
     ].iloc[0]
 
     # Expected goals
