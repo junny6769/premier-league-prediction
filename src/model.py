@@ -59,25 +59,11 @@ def calculate_expected_goals(
 
 def predict_match(home_team, away_team):
 
-    home = current_strengths[
-        current_strengths["team"] == home_team
-    ].iloc[0]
-
-    away = current_strengths[
-        current_strengths["team"] == away_team
-    ].iloc[0]
-
-    # Expected goals
-    expected_home_goals = (
-        league_home_goals
-        * home["home_attack_strength"]
-        * away["away_defence_strength"]
-    )
-
-    expected_away_goals = (
-        league_away_goals
-        * away["away_attack_strength"]
-        * home["home_defence_strength"]
+    expected_home_goals, expected_away_goals = (
+        calculate_expected_goals(
+            home_team,
+            away_team
+        )
     )
 
     home_win_probability = 0
@@ -87,13 +73,19 @@ def predict_match(home_team, away_team):
     most_likely_score = None
     highest_probability = 0
 
-    # Calculate score probabilities from 0-0 to 10-10
     for home_goals in range(11):
         for away_goals in range(11):
 
             probability = (
-                poisson.pmf(home_goals, expected_home_goals)
-                * poisson.pmf(away_goals, expected_away_goals)
+                poisson.pmf(
+                    home_goals,
+                    expected_home_goals
+                )
+                *
+                poisson.pmf(
+                    away_goals,
+                    expected_away_goals
+                )
             )
 
             if probability > highest_probability:
@@ -112,13 +104,16 @@ def predict_match(home_team, away_team):
             else:
                 away_win_probability += probability
 
-        total_probability = (
+    total_probability = (
             home_win_probability
             + draw_probability
             + away_win_probability
         )
-        
-        print(f"Probability captured: {total_probability * 100:.6f}%")
+
+    print(
+            f"Probability captured: "
+            f"{total_probability * 100:.6f}%"
+        )
 
     print(f"\n{home_team} vs {away_team}")
 
@@ -158,4 +153,8 @@ def predict_match(home_team, away_team):
     "most_likely_away_goals": most_likely_score[1]
 }
 
-predict_match("Man City", "Man United")
+if __name__ == "__main__":
+    predict_match(
+        "Man City",
+        "Man United"
+    )
