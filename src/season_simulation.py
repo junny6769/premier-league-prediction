@@ -1,6 +1,6 @@
-from model import calculate_expected_goals
 import pandas as pd
 import numpy as np
+from model import calculate_expected_goals
 
 current_table = pd.read_csv(
     "data/processed/current_2026_27_table.csv"
@@ -73,7 +73,7 @@ print(
 )
 
 #Monte carlo simulation
-NUM_SIMULATIONS = 1000
+NUM_SIMULATIONS = 10000
 
 rng = np.random.default_rng(42)
 
@@ -84,146 +84,133 @@ team_index = {
     for i, team in enumerate(teams)
 }
 
-position_totals = np.zeros(len(teams))
-points_totals = np.zeros(len(teams))
+num_teams = len(teams)
+num_fixtures = len(fixture_predictions)
+
+# Convert fixture teams into numeric indexes 
+home_indices = (
+    fixture_predictions["home_team"]
+    .map(team_index)
+    .to_numpy()
+)
+
+away_indices = (
+    fixture_predictions["away_team"]
+    .map(team_index)
+    .to_numpy()
+)
+
+# Expected goals for every remaining fixtures
+home_lambdas = (
+    fixture_predictions["expected_home_goals"]
+    .to_numpy()
+)
+
+away_lambdas = (
+    fixture_predictions["expected_away_goals"]
+    .to_numpy()
+)
+
+
+# Generate ALL simulated scores at once
+home_goals = rng.poisson(
+    lam=home_lambdas,
+    size=(NUM_SIMULATIONS, num_fixtures)
+)
+
+away_goals = rng.poisson(
+    lam=away_lambdas,
+    size=(NUM_SIMULATIONS, num_fixtures)
+)
+
+base_points = current_table["points"].to_numpy()
+base_goals_for = current_table["goals_for"].to_numpy()
+base_goals_against = current_table["goals_against"].to_numpy()
+
+
+points = np.tile(
+    base_points,
+    (NUM_SIMULATIONS, 1)
+)
+
+goals_for = np.tile(
+    base_goals_for,
+    (NUM_SIMULATIONS, 1)
+)
+
+goals_against = np.tile(
+    base_goals_against,
+    (NUM_SIMULATIONS, 1)
+)
+
+for fixture in range(num_fixtures):
+
+    home_idx = home_indices[fixture]
+    away_idx = away_indices[fixture]
+
+    hg = home_goals[:, fixture]
+    ag = away_goals[:, fixture]
+
+    # Goals
+    goals_for[:, home_idx] += hg
+    goals_against[:, home_idx] += ag
+
+    goals_for[:, away_idx] += ag
+    goals_against[:, away_idx] += hg
+
+    # Results
+    home_wins = hg > ag
+    away_wins = hg < ag
+    draws = hg == ag
+
+    points[:, home_idx] += (
+        home_wins * 3
+        + draws
+    )
+
+    points[:, away_idx] += (
+        away_wins * 3
+        + draws
+    )
+
+position_totals = np.zeros(num_teams)
+
+title_counts = np.zeros(num_teams)
+top4_counts = np.zeros(num_teams)
+relegation_counts = np.zeros(num_teams)
+
 
 for simulation in range(NUM_SIMULATIONS):
 
-    sim_table = current_table.copy()
-
-    for _, fixture in fixture_predictions.iterrows():
-
-        home = fixture["home_team"]
-        away = fixture["away_team"]
-
-        home_goals = rng.poisson(
-            fixture["expected_home_goals"]
-        )
-
-        away_goals = rng.poisson(
-            fixture["expected_away_goals"]
-        )
-
-        home_idx = sim_table.index[
-            sim_table["team"] == home
-        ][0]
-
-        away_idx = sim_table.index[
-            sim_table["team"] == away
-        ][0]
-
-        # Played
-        sim_table.loc[home_idx, "played"] += 1
-        sim_table.loc[away_idx, "played"] += 1
-
-        # Goals
-        sim_table.loc[
-            home_idx,
-            "goals_for"
-        ] += home_goals
-
-        sim_table.loc[
-            home_idx,
-            "goals_against"
-        ] += away_goals
-
-        sim_table.loc[
-            away_idx,
-            "goals_for"
-        ] += away_goals
-
-        sim_table.loc[
-            away_idx,
-            "goals_against"
-        ] += home_goals
-
-        # Points
-        if home_goals > away_goals:
-
-            sim_table.loc[
-                home_idx,
-                "wins"
-            ] += 1
-
-            sim_table.loc[
-                away_idx,
-                "losses"
-            ] += 1
-
-            sim_table.loc[
-                home_idx,
-                "points"
-            ] += 3
-
-        elif away_goals > home_goals:
-
-            sim_table.loc[
-                away_idx,
-                "wins"
-            ] += 1
-
-            sim_table.loc[
-                home_idx,
-                "losses"
-            ] += 1
-
-            sim_table.loc[
-                away_idx,
-                "points"
-            ] += 3
-
-        else:
-
-            sim_table.loc[
-                home_idx,
-                "draws"
-            ] += 1
-
-            sim_table.loc[
-                away_idx,
-                "draws"
-            ] += 1
-
-            sim_table.loc[
-                home_idx,
-                "points"
-            ] += 1
-
-            sim_table.loc[
-                away_idx,
-                "points"
-            ] += 1
-
-        sim_table["goal_difference"] = (
-        sim_table["goals_for"]
-        - sim_table["goals_against"]
+    goal_difference = (
+        goals_for[simulation]
+        - goals_against[simulation]
     )
 
-    sim_table = sim_table.sort_values(
-        by=[
-            "points",
-            "goal_difference",
-            "goals_for"
-        ],
-        ascending=False
-    ).reset_index(drop=True)
+    order = np.lexsort((
+        -goals_for[simulation],
+        -goal_difference,
+        -points[simulation]
+    ))
 
-    sim_table["position"] = (
-        range(1, 21)
+    positions = np.empty(num_teams, dtype=int)
+
+    positions[order] = np.arange(
+        1,
+        num_teams + 1
     )
 
-    for _, row in sim_table.iterrows():
+    position_totals += positions
 
-        idx = team_index[row["team"]]
+    title_counts[order[0]] += 1
 
-        position_totals[idx] += (
-            row["position"]
-        )
+    top4_counts[
+        order[:4]
+    ] += 1
 
-        points_totals[idx] += (
-            row["points"]
-        )
-
+    relegation_counts[
+        order[-3:]
+    ] += 1
 
 #Predicted table produced 
 
@@ -232,8 +219,21 @@ predicted_table = pd.DataFrame({
     "average_position":
         position_totals / NUM_SIMULATIONS,
     "average_points":
-        points_totals / NUM_SIMULATIONS
+        points.mean(axis=0),
+    "title_probability":
+        title_counts
+        / NUM_SIMULATIONS
+        * 100,
+    "top4_probability":
+        top4_counts
+        / NUM_SIMULATIONS
+        * 100,
+    "relegation_probability":
+        relegation_counts
+        / NUM_SIMULATIONS
+        * 100
 })
+
 predicted_table = (
     predicted_table
     .sort_values(
@@ -258,6 +258,24 @@ predicted_table[
     "average_points"
 ] = predicted_table[
     "average_points"
+].round(1)
+
+predicted_table[
+    "title_probability"
+] = predicted_table[
+    "title_probability"
+].round(1)
+
+predicted_table[
+    "top4_probability"
+] = predicted_table[
+    "top4_probability"
+].round(1)
+
+predicted_table[
+    "relegation_probability"
+] = predicted_table[
+    "relegation_probability"
 ].round(1)
 
 print("\nPREDICTED FINAL 2026/27 TABLE")
