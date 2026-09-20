@@ -1,4 +1,7 @@
 import pandas as pd
+from sqlalchemy import text
+
+from db import get_engine
 
 match_columns = [
     "Date", "Time", "HomeTeam", "AwayTeam", "FTHG", "FTAG", "FTR",
@@ -20,7 +23,8 @@ def clean_season(path, season):
     df = pd.read_csv(path, header=1)
     df = df[match_columns].copy()
     df = df.rename(columns=rename_map)
-    df["date"] = pd.to_datetime(df["date"], dayfirst=True)
+    df["date"] = pd.to_datetime(df["date"], dayfirst=True).dt.date
+    df["time"] = pd.to_datetime(df["time"], format="%H:%M").dt.time
     df["season"] = season 
     return df
 
@@ -52,6 +56,25 @@ print(
 print("\nMissing values:")
 print(clean_df.isnull().sum())
 
-# Save processed dataset
-clean_df.to_csv("data/processed/premier_league_2021_26_clean.csv", index=False)
-print("Saved cleaned 5-season dataset.")
+if (
+    clean_df.groupby("season").size().to_dict() != dict.fromkeys(season_files, 380)
+    or clean_df.duplicated(["season", "date", "home_team", "away_team"]).any()
+    or clean_df[["home_goals", "away_goals", "full_time_result"]].isna().any().any()
+):
+    raise ValueError("Historical match data is incomplete or duplicated; database was not changed")
+
+engine = get_engine()
+with engine.begin() as connection:
+    team_names = sorted(set(clean_df["home_team"]) | set(clean_df["away_team"]))
+    connection.execute(
+        text("INSERT INTO teams (name) VALUES (:name) ON CONFLICT (name) DO NOTHING"),
+        [{"name": name} for name in team_names],
+    )
+    team_ids = pd.read_sql("SELECT team_id, name FROM teams", connection).set_index("name")["team_id"]
+    clean_df["home_team_id"] = clean_df.pop("home_team").map(team_ids)
+    clean_df["away_team_id"] = clean_df.pop("away_team").map(team_ids)
+    for season in season_files:
+        connection.execute(text("DELETE FROM matches WHERE season = :season"), {"season": season})
+    clean_df.to_sql("matches", connection, if_exists="append", index=False)
+
+print(f"Loaded {len(clean_df)} matches and updated teams in PostgreSQL.")

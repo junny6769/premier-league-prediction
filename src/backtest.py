@@ -1,8 +1,7 @@
 import pandas as pd
-from sqlalchemy import create_engine
-from getpass import getpass
-from urllib.parse import quote_plus
 from scipy.stats import poisson
+
+from db import get_engine
 
 training_seasons = [
     "2021-22",
@@ -21,12 +20,7 @@ season_weights = {
 }
 
 # Connect to PostgreSQL
-password = getpass("PostgreSQL password: ")
-password = quote_plus(password)
-
-engine = create_engine(
-    f"postgresql+psycopg://postgres:{password}@localhost:5432/premier_league"
-)
+engine = get_engine()
 
 # Load team-level match data
 team_matches = pd.read_sql(
@@ -189,8 +183,10 @@ print("Away goals:", round(league_away_goals, 3))
 
 test_matches = pd.read_sql(
     """
-    SELECT *
-    FROM matches
+    SELECT m.*, home.name AS home_team, away.name AS away_team
+    FROM matches AS m
+    JOIN teams AS home ON home.team_id = m.home_team_id
+    JOIN teams AS away ON away.team_id = m.away_team_id
     WHERE season = '2025-26'
     ORDER BY date;
     """,

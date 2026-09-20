@@ -1,8 +1,7 @@
 import pandas as pd
 
 current_results = pd.read_csv(
-    "data/raw/premier_league_2026_27.csv",
-    header=1
+    "data/raw/premier_league_2026_27.csv"
 )
 
 print("Completed matches:", len(current_results))
@@ -51,28 +50,6 @@ current_results["date"] = pd.to_datetime(
 
 current_results["season"] = "2026-27"
 
-current_results.to_csv(
-    "data/processed/current_2026_27_results.csv",
-    index=False
-)
-
-# Add recent results
-recent_results = pd.read_csv(
-    "data/raw/premier_league_2026_27_recent.csv"
-)
-
-recent_results["date"] = pd.to_datetime(
-    recent_results["date"]
-)
-
-current_results = pd.concat(
-    [
-        current_results,
-        recent_results
-    ],
-    ignore_index=True
-)
-
 current_results = current_results.drop_duplicates(
     subset=[
         "date",
@@ -84,11 +61,6 @@ current_results = current_results.drop_duplicates(
 current_results = current_results.sort_values(
     by=["date", "time"]
 ).reset_index(drop=True)
-
-print(
-    "Completed matches after update:",
-    len(current_results)
-)
 
 current_results.to_csv(
     "data/processed/current_2026_27_results.csv",

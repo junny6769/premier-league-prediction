@@ -3,8 +3,8 @@ CREATE OR REPLACE VIEW team_matches AS
 SELECT
     season,
     date,
-    home_team AS team,
-    away_team AS opponent,
+    home.name AS team,
+    away.name AS opponent,
     'Home' AS venue,
     home_goals AS goals_for,
     away_goals AS goals_against,
@@ -19,15 +19,17 @@ SELECT
         ELSE 0
     END AS points
 
-FROM matches
+FROM matches AS m
+JOIN teams AS home ON home.team_id = m.home_team_id
+JOIN teams AS away ON away.team_id = m.away_team_id
 
 UNION ALL
 
 SELECT
     season,
     date,
-    away_team AS team,
-    home_team AS opponent,
+    away.name AS team,
+    home.name AS opponent,
     'Away' AS venue,
     away_goals AS goals_for,
     home_goals AS goals_against,
@@ -42,7 +44,9 @@ SELECT
         ELSE 0
     END AS points
 
-FROM matches;
+FROM matches AS m
+JOIN teams AS home ON home.team_id = m.home_team_id
+JOIN teams AS away ON away.team_id = m.away_team_id;
 
 CREATE OR REPLACE VIEW team_season_summary AS
 

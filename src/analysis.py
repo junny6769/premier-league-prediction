@@ -1,15 +1,8 @@
 import pandas as pd
-from sqlalchemy import create_engine
-from getpass import getpass
-from urllib.parse import quote_plus
 
+from db import get_engine
 
-password = getpass("PostgreSQL password: ")
-password = quote_plus(password)
-
-engine = create_engine(
-    f"postgresql+psycopg://postgres:{password}@localhost:5432/premier_league"
-)
+engine = get_engine()
 
 
 query = """
