@@ -18,7 +18,7 @@ python -m pip install -r requirements.txt
 ## Set up Neon
 
 1. Copy `.env.example` to `.env` and set `DATABASE_URL` to your Neon direct PostgreSQL connection string. `DATABASE_URL_POOLED` is optional and not used by these scripts. `.env` is ignored by Git.
-2. For a new Neon database, run `sql/create_tables.sql`, then `sql/analysis_queries.sql` in the Neon SQL Editor.
+2. For a new Neon database, run `sql/migrations/001_create_core_tables.up.sql`, then `sql/analysis_queries.sql` in the Neon SQL Editor. If `teams` and `matches` already exist, no table migration is needed.
 3. With the virtual environment active, load the historical match data from the repository root:
 
 ```sh
@@ -26,3 +26,5 @@ python src/data_cleaning.py
 ```
 
 Query `matches` or the `team_matches`, `team_season_summary`, and `team_venue_summary` views directly in Neon. The rest of the prediction pipeline has not yet been converted to direct database queries.
+
+The matching `001_create_core_tables.down.sql` drops the views and both tables, including their data.
