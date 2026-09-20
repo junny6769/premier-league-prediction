@@ -3,4 +3,3 @@ pandas==3.0.5
 psycopg[binary]==3.3.5
 scipy==1.18.1
 SQLAlchemy==2.0.52
-streamlit==1.64.0

@@ -8,6 +8,5 @@ env/
 .env.*
 !.env.example
 .envrc
-.streamlit/secrets.toml
 .ipynb_checkpoints/
 .pypirc
