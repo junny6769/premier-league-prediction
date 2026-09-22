@@ -1,5 +1,6 @@
 import pandas as pd
 from sqlalchemy import text
+from sqlalchemy.types import Time
 
 from db import get_engine
 
@@ -20,16 +21,79 @@ rename_map = {
 }
 
 def clean_season(path, season):
-    df = pd.read_csv(path, header=1)
+    print(f"Cleaning {season}: {path}")
+
+    # Find which row contains the actual CSV header
+    header_row = None
+
+    with open(path, "r", encoding="utf-8-sig") as file:
+        for i in range(5):
+            line = file.readline()
+
+            if "Date" in line and "HomeTeam" in line and "AwayTeam" in line:
+                header_row = i
+                break
+
+    if header_row is None:
+        raise ValueError(
+            f"Could not find CSV header for {season}: {path}"
+        )
+
+    df = pd.read_csv(path, header=header_row)
+
+    # Columns that every season must contain
+    required_columns = [
+        "Date",
+        "HomeTeam",
+        "AwayTeam",
+        "FTHG",
+        "FTAG",
+        "FTR"
+    ]
+
+    missing_required = [
+        column
+        for column in required_columns
+        if column not in df.columns
+    ]
+
+    if missing_required:
+        raise ValueError(
+            f"{season} is missing required columns: {missing_required}"
+        )
+
+    # Older seasons may not contain some columns such as Time
+    for column in match_columns:
+        if column not in df.columns:
+            df[column] = pd.NA
+
     df = df[match_columns].copy()
+
     df = df.rename(columns=rename_map)
-    df["date"] = pd.to_datetime(df["date"], dayfirst=True).dt.date
-    df["time"] = pd.to_datetime(df["time"], format="%H:%M").dt.time
-    df["season"] = season 
+
+    df["date"] = pd.to_datetime(
+        df["date"],
+        dayfirst=True
+    ).dt.date
+
+    # Some historical seasons do not include kick-off time
+    df["time"] = pd.to_datetime(
+        df["time"],
+        format="%H:%M",
+        errors="coerce"
+    ).dt.time
+
+    df["season"] = season
+
     return df
 
 # Grab all raw season files and clean each one
 season_files = {
+    "2016-17": "data/raw/premier_league_2016_17.csv",
+    "2017-18": "data/raw/premier_league_2017_18.csv",
+    "2018-19": "data/raw/premier_league_2018_19.csv",
+    "2019-20": "data/raw/premier_league_2019_20.csv",
+    "2020-21": "data/raw/premier_league_2020_21.csv",
     "2021-22": "data/raw/premier_league_2021_22.csv",
     "2022-23": "data/raw/premier_league_2022_23.csv",
     "2023-24": "data/raw/premier_league_2023_24.csv",
@@ -75,6 +139,7 @@ with engine.begin() as connection:
     clean_df["away_team_id"] = clean_df.pop("away_team").map(team_ids)
     for season in season_files:
         connection.execute(text("DELETE FROM matches WHERE season = :season"), {"season": season})
-    clean_df.to_sql("matches", connection, if_exists="append", index=False)
+    clean_df.to_sql("matches", connection, if_exists="append", index=False,  dtype={"time": Time()
+    })
 
 print(f"Loaded {len(clean_df)} matches and updated teams in PostgreSQL.")
