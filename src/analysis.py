@@ -4,7 +4,6 @@ from db import get_engine
 
 engine = get_engine()
 
-
 query = """
 SELECT *
 FROM team_matches;
