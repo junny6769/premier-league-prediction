@@ -1,7 +1,7 @@
 import pandas as pd
 from scipy.stats import poisson
-
 from db import get_engine
+import math
 
 # Connect to PostgreSQL
 engine = get_engine()
@@ -365,16 +365,51 @@ def run_backtest(training_seasons, test_season):
                 predicted_result == actual_result
         })
 
-
     results_df = pd.DataFrame(results)
 
-    # Evaluation
+    # Calculate match-result log loss
+    log_losses = []
 
-    accuracy = (
-        results_df["correct"]
-        .mean()
+    for _, row in results_df.iterrows():
+
+        total = (
+            row["home_win_probability"]
+            + row["draw_probability"]
+            + row["away_win_probability"]
+        )
+
+        if row["actual_result"] == "H":
+            actual_probability = (
+                row["home_win_probability"] / total
+            )
+
+        elif row["actual_result"] == "D":
+            actual_probability = (
+                row["draw_probability"] / total
+            )
+
+        else:
+            actual_probability = (
+                row["away_win_probability"] / total
+            )
+
+        actual_probability = max(
+            actual_probability,
+            1e-15
+        )
+
+        log_losses.append(
+            -math.log(actual_probability)
+        )
+
+    match_log_loss = (
+        sum(log_losses) / len(log_losses)
     )
 
+    # Calculate accuracy
+    accuracy = results_df["correct"].mean()
+
+    # Calculate goal MAE
     home_goal_mae = (
         results_df["actual_home_goals"]
         - results_df["expected_home_goals"]
@@ -386,16 +421,16 @@ def run_backtest(training_seasons, test_season):
     ).abs().mean()
 
     overall_goal_mae = (
-        home_goal_mae
-        + away_goal_mae
+        home_goal_mae + away_goal_mae
     ) / 2
 
-
+    # Return all evaluation metrics
     return {
         "accuracy": accuracy,
         "home_goal_mae": home_goal_mae,
         "away_goal_mae": away_goal_mae,
-        "overall_goal_mae": overall_goal_mae
+        "overall_goal_mae": overall_goal_mae,
+        "log_loss": match_log_loss
     }
 
 # Run both models
@@ -425,7 +460,10 @@ for model_name, seasons in training_windows.items():
             metrics["away_goal_mae"],
 
         "overall_goal_mae":
-            metrics["overall_goal_mae"]
+            metrics["overall_goal_mae"],
+
+        "log_loss":
+            metrics["log_loss"]
     })
 
 
