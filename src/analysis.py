@@ -14,9 +14,24 @@ team_matches = pd.read_sql(query, engine)
 print(team_matches.head())
 print(team_matches.shape)
 
+TRAINING_SEASONS = [
+    "2021-22",
+    "2022-23",
+    "2023-24",
+    "2024-25",
+    "2025-26"
+]
+
+train = team_matches[
+    team_matches["season"].isin(TRAINING_SEASONS)
+].copy()
+
+print("Training seasons:", TRAINING_SEASONS)
+print("Training rows:", len(train))
+
 # Calculate home performance
 home_stats = (
-    team_matches[team_matches["venue"] == "Home"]
+    train[train["venue"] == "Home"]
     .groupby(["season", "team"])
     .agg(
         home_matches=("team", "size"),
@@ -30,7 +45,7 @@ home_stats = (
 
 # Calculate away performance
 away_stats = (
-    team_matches[team_matches["venue"] == "Away"]
+    train[train["venue"] == "Away"]
     .groupby(["season", "team"])
     .agg(
         away_matches=("team", "size"),
@@ -47,7 +62,7 @@ print(away_stats.head())
 
 # League average goals by season
 league_averages = (
-    team_matches
+    train
     .groupby(["season", "venue"])
     ["goals_for"]
     .mean()
