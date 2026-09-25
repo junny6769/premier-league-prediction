@@ -1,0 +1,21 @@
+predicted_position,team,average_position,average_points,title_probability,top4_probability,relegation_probability
+1,Man City,1.79,79.2,47.3,98.3,0.0
+2,Arsenal,1.91,78.4,41.2,97.9,0.0
+3,Liverpool,3.29,70.5,10.0,84.1,0.0
+4,Chelsea,7.36,58.2,0.4,25.8,1.0
+5,Newcastle,7.38,58.1,0.5,24.4,1.0
+6,Aston Villa,8.81,55.1,0.2,13.5,2.2
+7,Man United,9.32,54.0,0.1,11.8,3.4
+8,Brighton,9.66,53.5,0.1,10.3,3.9
+9,Brentford,10.43,52.0,0.1,6.7,5.4
+10,Tottenham,10.75,51.4,0.1,6.7,6.8
+11,Hull,11.46,50.1,0.0,4.7,8.6
+12,Coventry,11.47,50.1,0.0,4.5,8.5
+13,Bournemouth,12.33,48.5,0.0,3.0,12.2
+14,Fulham,12.41,48.3,0.0,3.0,13.0
+15,Crystal Palace,13.36,46.5,0.0,1.6,17.9
+16,Nott'm Forest,13.44,46.3,0.0,1.7,18.6
+17,Sunderland,13.84,45.6,0.0,1.2,20.2
+18,Everton,14.65,43.9,0.0,0.6,27.8
+19,Leeds,16.47,39.8,0.0,0.2,50.1
+20,Ipswich,19.89,22.8,0.0,0.0,99.3

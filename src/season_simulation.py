@@ -3,48 +3,10 @@ import numpy as np
 from model import calculate_expected_goals
 
 def run_simulation(
-    current_table,
     fixtures,
     num_simulations=10000,
     random_seed=42
 ):
-
-    print("Current teams:", len(current_table))
-    print("Remaining fixtures:", len(fixtures))
-
-    home_counts = fixtures["home_team"].value_counts()
-    away_counts = fixtures["away_team"].value_counts()
-    remaining_counts = home_counts.add(
-        away_counts,
-        fill_value=0
-    )
-
-    fixture_check = current_table[
-        ["team", "played"]
-    ].copy()
-
-    fixture_check["remaining"] = (
-        fixture_check["team"]
-        .map(remaining_counts)
-        .fillna(0)
-        .astype(int)
-    )
-
-    fixture_check["final_total"] = (
-        fixture_check["played"]
-        + fixture_check["remaining"]
-    )
-
-    print("\nFIXTURE CHECK")
-    print(fixture_check.to_string(index=False))
-
-    if not (
-        fixture_check["final_total"] == 38
-    ).all():
-        raise ValueError(
-            "Fixture data error: "
-            "not every team reaches 38 matches."
-        )
 
     fixture_predictions = []
 
@@ -81,7 +43,19 @@ def run_simulation(
         random_seed
     )
 
-    teams = current_table["team"].tolist()
+    teams = sorted(
+    set(fixtures["home_team"])
+    | set(fixtures["away_team"])
+    )
+
+    print("Teams:", len(teams))
+    print("Fixtures:", len(fixtures))
+
+    if len(teams) != 20:
+        raise ValueError("Expected 20 teams.")
+
+    if len(fixtures) != 380:
+        raise ValueError("Expected 380 fixtures.")
 
     team_index = {
         team: i
@@ -134,34 +108,19 @@ def run_simulation(
         )
     )
 
-    base_points = (
-        current_table["points"]
-        .to_numpy(dtype=int)
+    points = np.zeros(
+    (num_simulations, num_teams),
+    dtype=int
     )
 
-    base_goals_for = (
-        current_table["goals_for"]
-        .to_numpy(dtype=int)
+    goals_for = np.zeros(
+    (num_simulations, num_teams),
+    dtype=int
     )
 
-    base_goals_against = (
-        current_table["goals_against"]
-        .to_numpy(dtype=int)
-    )
-
-    points = np.tile(
-        base_points,
-        (num_simulations, 1)
-    )
-
-    goals_for = np.tile(
-        base_goals_for,
-        (num_simulations, 1)
-    )
-
-    goals_against = np.tile(
-        base_goals_against,
-        (num_simulations, 1)
+    goals_against = np.zeros(
+    (num_simulations, num_teams),
+    dtype=int
     )
 
     for fixture in range(num_fixtures):
@@ -317,20 +276,15 @@ def run_simulation(
 # Run normal season prediction when file is executed
 if __name__ == "__main__":
 
-    current_table = pd.read_csv(
-        "data/processed/current_2026_27_table.csv"
-    )
-
     fixtures = pd.read_csv(
-        "data/processed/remaining_2026_27_fixtures.csv"
+    "data/processed/premier_league_2026_27_fixtures.csv"
     )
 
     predicted_table = run_simulation(
-        current_table,
-        fixtures,
-        num_simulations=10000
+    fixtures,
+    num_simulations=10000
     )
-
+    
     print(
         "\nPREDICTED FINAL 2026/27 TABLE"
     )
