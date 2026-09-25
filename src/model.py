@@ -109,7 +109,11 @@ def predict_match(home_team, away_team):
             + draw_probability
             + away_win_probability
         )
-
+    
+    home_win_probability /= total_probability
+    draw_probability /= total_probability
+    away_win_probability /= total_probability
+    
     print(
             f"Probability captured: "
             f"{total_probability * 100:.6f}%"
