@@ -107,7 +107,7 @@ The full prediction also includes average finishing position, Top 4 probability 
 
 The interactive Tableau dashboard presents the five analytical questions and the 2026/27 season prediction.
 
-**Dashboard:** [View on Tableau Public](public.tableau.com/views/EPLanalyticspredictionproject/Overview?:language=en-GB&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+**Dashboard:** [View on Tableau Public](https://public.tableau.com/views/EPLanalyticspredictionproject/Overview?:language=en-GB&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
 
 ## Tech Stack
 
